@@ -1,0 +1,18 @@
+
+name: SANZX PROXY APK Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare demo APK
+        run: |
+          echo "Repository SANZX PROXY siap."
+          echo "Project Android belum diunggah."
+          
