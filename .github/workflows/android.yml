@@ -1,4 +1,4 @@
-name: SANZX PROXY APK Build
+huname: SANZX PROXY APK Build
 
 on:
 workflow_dispatch:
