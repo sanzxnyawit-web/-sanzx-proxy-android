@@ -11,8 +11,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare demo APK
+      - name: Check project files
         run: |
-          echo "Repository SANZX PROXY siap."
-          echo "Project Android belum diunggah."
+          echo "Memeriksa file proyek Android..."
+          if [ ! -f settings.gradle ] && [ ! -f settings.gradle.kts ]; then
+            echo "Proyek Android belum diunggah."
+            exit 1
+          fi
+          echo "File proyek ditemukan."
           
