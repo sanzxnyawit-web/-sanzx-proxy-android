@@ -1,45 +1,61 @@
 name: SANZX PROXY APK Build
 
 on:
-  workflow_dispatch:
+workflow_dispatch:
 
 permissions:
-  contents: read
+contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+build:
+runs-on: ubuntu-latest
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Extract Android project
-        run: |
-          unzip -o SANZX-PROXY-APK-Project.zip -d project
-          echo "Isi proyek:"
-          find project -maxdepth 4 -type f | head -n 100
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
 
-      - name: Build APK
-        run: |
-          GRADLEW=$(find project -type f -name gradlew | head -n 1)
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: File gradlew tidak ditemukan."
-            find project -maxdepth 5 -type f
-            exit 1
-          fi
-          chmod +x "$GRADLEW"
-          cd "$(dirname "$GRADLEW")"
-          ./gradlew assembleDebug
+  - name: Install Gradle
+    uses: gradle/actions/setup-gradle@v4
+    with:
+      gradle-version: '8.9'
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: SANZX-PROXY-APK
-          path: project/**/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+  - name: Check project ZIP
+    run: |
+      test -f SANZX-PROXY-APK-Project.zip
+      unzip -t SANZX-PROXY-APK-Project.zip
+
+  - name: Extract Android project
+    run: |
+      mkdir -p project
+      unzip -o SANZX-PROXY-APK-Project.zip -d project
+      echo "Struktur proyek:"
+      find project -maxdepth 5 -type f | head -n 100
+
+  - name: Locate Android project
+    run: |
+      SETTINGS=$(find project -type f -name settings.gradle.kts -print -quit)
+      if [ -z "$SETTINGS" ]; then
+        echo "ERROR: settings.gradle.kts tidak ditemukan."
+        exit 1
+      fi
+      echo "PROJECT_DIR=$(dirname "$SETTINGS")" >> "$GITHUB_ENV"
+
+  - name: Build APK
+    run: |
+      cd "$PROJECT_DIR"
+      gradle wrapper --gradle-version 8.9
+      chmod +x gradlew
+      ./gradlew assembleDebug
+
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: SANZX-PROXY-APK
+      path: '**/build/outputs/apk/debug/*.apk'
+      if-no-files-found: error
