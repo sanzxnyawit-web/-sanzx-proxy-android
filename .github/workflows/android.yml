@@ -1,44 +1,44 @@
 name: SANZX PROXY APK Build
 
 on:
-  workflow_dispatch:
+workflow_dispatch:
 
 permissions:
-  contents: read
+contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+build:
+runs-on: ubuntu-latest
+steps:
+- name: Checkout repository
+uses: actions/checkout@v4
 
-      - name: Extract Android project
-        run: |
-          echo "Isi repositori:"
-          find . -maxdepth 3 -type f | head -n 100
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+  - name: Extract Android project
+    run: |
+      unzip -o SANZX-PROXY-APK-Project.zip -d project
+      echo "Isi file hasil ekstrak:"
+      find project -maxdepth 4 -type f | head -n 100
 
-      - name: Build APK
-        run: |
-          echo "Mencari file gradlew..."
-          GRADLEW=$(find . -type f -name gradlew | head -n 1)
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: File gradlew tidak ditemukan di repositori."
-            exit 1
-          fi
-          chmod +x "$GRADLEW"
-          cd "$(dirname "$GRADLEW")"
-          ./gradlew assembleDebug
+  - name: Build APK
+    run: |
+      GRADLEW=$(find project -type f -name gradlew | head -n 1)
+      if [ -z "$GRADLEW" ]; then
+        echo "ERROR: gradlew tidak ditemukan di dalam ZIP."
+        exit 1
+      fi
+      chmod +x "$GRADLEW"
+      cd "$(dirname "$GRADLEW")"
+      ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: SANZX-PROXY-APK
-          path: '**/build/outputs/apk/debug/*.apk'
-          if-no-files-found: error
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: SANZX-PROXY-APK
+      path: project/**/build/outputs/apk/debug/*.apk
+      if-no-files-found: error
